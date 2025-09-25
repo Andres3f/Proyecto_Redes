@@ -269,12 +269,5 @@ python examples/pruebademo_mvp.py
 python ejecutar_programa.py
 ```
 
-## 📞 Soporte
-
-Para reportar problemas o sugerir mejoras, revisa la documentación en `docs/` o contacta al equipo de desarrollo.
-
----
-
-**Nota**: Este proyecto está en desarrollo activo. Consulta `docs/ROADMAP.md` para conocer las funcionalidades planificadas.
-
 **🚀 Recomendación**: Usa `python ejecutar_programa.py` para una experiencia sin problemas.
+
