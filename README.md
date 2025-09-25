@@ -31,6 +31,7 @@ Proyecto_Redes/
 │   └── test_transfer.py           # Pruebas de transferencia
 ├── received/                      # Directorio para archivos recibidos
 ├── requirements.txt               # Dependencias del proyecto
+├── ejecutar_programa.py           # EJECUTOR PRINCIPAL (RECOMENDADO)
 └── README.md                      # Este archivo
 ```
 
@@ -54,16 +55,47 @@ pip install -r requirements.txt
 - `pillow`: Para manipulación de imágenes
 - `numpy`: Para operaciones numéricas
 
-## 🏃‍♂️ Comandos Básicos para Ejecutar el Proyecto
+## 🏃‍♂️ Comandos para Ejecutar el Proyecto
 
-### 1. Ejecutar el Servidor (Demo MVP)
+### ⭐ MÉTODO RECOMENDADO - Ejecutor Automático
+
 ```bash
-# Desde la raíz del proyecto
+# Demo completo (RECOMENDADO - Soluciona todos los problemas automáticamente)
+python ejecutar_programa.py
+
+# Ver todas las opciones disponibles
+python ejecutar_programa.py ayuda
+
+# Ejecutar solo servidor
+python ejecutar_programa.py servidor
+
+# Ejecutar solo cliente
+python ejecutar_programa.py cliente
+```
+
+**✅ Ventajas del ejecutor automático:**
+- Configura automáticamente el entorno
+- Soluciona el problema del módulo `src`
+- Manejo robusto de errores
+- Interfaz amigable con mensajes claros
+- Verificación automática de archivos recibidos
+
+### 🔧 Métodos Manuales (Alternativos)
+
+#### 1. Ejecutar el Servidor (Demo MVP)
+```bash
+# Configurar PYTHONPATH primero
+$env:PYTHONPATH = "C:\Users\HP\OneDrive\Escritorio\Proyecto_Redes"
+
+# Ejecutar servidor
 python examples/pruebademo_mvp.py
 ```
 
-### 2. Ejecutar Cliente para Enviar Archivos
+#### 2. Ejecutar Cliente para Enviar Archivos
 ```bash
+# Configurar PYTHONPATH primero
+$env:PYTHONPATH = "C:\Users\HP\OneDrive\Escritorio\Proyecto_Redes"
+
 # En otra terminal, ejecutar el cliente
 python -c "
 import asyncio
@@ -72,7 +104,7 @@ asyncio.run(send_file('localhost', 9000, 'prueba.txt'))
 "
 ```
 
-### 3. Ejecutar Transferencia de Imágenes
+#### 3. Ejecutar Transferencia de Imágenes
 ```bash
 # Servidor para imágenes
 python examples/pruebdemo_img_transfer.py
@@ -132,13 +164,28 @@ await start_server("0.0.0.0", 9000, on_message)
 
 ## 📊 Ejemplo de Uso Completo
 
+### ⭐ Método Recomendado (Automático)
+```bash
+# Un solo comando ejecuta todo el demo
+python ejecutar_programa.py
+```
+
+### 🔧 Método Manual
 1. **Iniciar el servidor**:
    ```bash
+   # Configurar PYTHONPATH primero
+   $env:PYTHONPATH = "C:\Users\HP\OneDrive\Escritorio\Proyecto_Redes"
+   
+   # Ejecutar servidor
    python examples/pruebademo_mvp.py
    ```
 
 2. **Enviar un archivo** (en otra terminal):
    ```bash
+   # Configurar PYTHONPATH primero
+   $env:PYTHONPATH = "C:\Users\HP\OneDrive\Escritorio\Proyecto_Redes"
+   
+   # Ejecutar cliente
    python -c "
    import asyncio
    from src.app.cliente import send_file
@@ -182,3 +229,45 @@ Los mensajes siguen un formato JSON estándar:
   "size": 1024
 }
 ```
+
+### Agregar Nuevas Funcionalidades
+1. Implementar en la capa correspondiente (`src/`)
+2. Crear ejemplo en `examples/`
+3. Agregar pruebas en `tests/`
+4. Actualizar documentación
+
+## 🆘 Solución de Problemas
+
+### ❌ Error: "ModuleNotFoundError: No module named 'src'"
+
+**Solución rápida:**
+```bash
+# Usar el ejecutor automático (recomendado)
+python ejecutar_programa.py
+```
+
+**Solución manual:**
+```bash
+# Configurar PYTHONPATH antes de ejecutar
+$env:PYTHONPATH = "C:\Users\HP\OneDrive\Escritorio\Proyecto_Redes"
+python examples/pruebademo_mvp.py
+```
+
+### ❌ Error: "ConnectionRefusedError"
+
+**Causa:** El servidor no está ejecutándose.
+
+**Solución:**
+1. Ejecutar el servidor primero
+2. Esperar a que inicie completamente
+3. Luego ejecutar el cliente
+
+### ✅ Verificar que todo funciona
+
+```bash
+# Ejecutar demo completo para verificar
+python ejecutar_programa.py
+```
+
+**🚀 Recomendación**: Usa `python ejecutar_programa.py` para una experiencia sin problemas.
+
