@@ -182,17 +182,3 @@ Los mensajes siguen un formato JSON estándar:
   "size": 1024
 }
 ```
-
-### Agregar Nuevas Funcionalidades
-1. Implementar en la capa correspondiente (`src/`)
-2. Crear ejemplo en `examples/`
-3. Agregar pruebas en `tests/`
-4. Actualizar documentación
-
-## 📞 Soporte
-
-Para reportar problemas o sugerir mejoras, revisa la documentación en `docs/` o contacta al equipo de desarrollo.
-
----
-
-**Nota**: Este proyecto está en desarrollo activo. Consulta `docs/ROADMAP.md` para conocer las funcionalidades planificadas.
