@@ -30,6 +30,12 @@ Proyecto_Redes/
 ├── tests/                         # Pruebas unitarias
 │   └── test_transfer.py           # Pruebas de transferencia
 ├── received/                      # Directorio para archivos recibidos
+├── frontend_api/                  # API proxy + WebSocket (FastAPI)
+│   ├── main.py                    # Endpoint /send y /ws (chat)
+│   └── test_ws_clients.py         # Script de prueba de WS (clientes simulados)
+├── frontend/                      # Interfaz web (React + Vite)
+│   ├── package.json
+│   └── src/                       # Código fuente React
 ├── requirements.txt               # Dependencias del proyecto
 ├── ejecutar_programa.py           # EJECUTOR PRINCIPAL (RECOMENDADO)
 └── README.md                      # Este archivo
@@ -57,6 +63,35 @@ pip install -r requirements.txt
 
 ## 🏃‍♂️ Comandos para Ejecutar el Proyecto
 
+## Cómo ejecutar (rápido)
+
+Si quieres ejecutar el proyecto de forma rápida, usa los comandos siguientes en PowerShell desde la raíz del repositorio:
+
+```powershell
+# 1) Demo completo (arranca servidor y cliente, verifica transferencia)
+python ejecutar_programa.py
+
+# 2) Ejecutar solo el servidor
+python ejecutar_programa.py servidor
+
+# 3) Ejecutar solo el cliente (envía `prueba.txt` al servidor en localhost:9000)
+python ejecutar_programa.py cliente
+
+# 4) Ejecutar cliente manualmente usando la función `send_file`
+$env:PYTHONPATH = "C:\Users\HP\OneDrive\Escritorio\Proyecto_Redes"
+python -c "import asyncio; from src.app.cliente import send_file; asyncio.run(send_file('localhost', 9000, 'prueba.txt'))"
+
+# 5) (Opcional) Interfaz web - iniciar proxy y frontend
+cd frontend_api
+pip install -r requirements.txt
+uvicorn main:app --host 127.0.0.1 --port 8000
+# En otra terminal:
+cd ../frontend
+npm install
+npm run dev
+```
+
+
 ### ⭐ MÉTODO RECOMENDADO - Ejecutor Automático
 
 ```bash
@@ -72,6 +107,33 @@ python ejecutar_programa.py servidor
 # Ejecutar solo cliente
 python ejecutar_programa.py cliente
 ```
+
+### 🖥️ Frontend (React) y proxy HTTP
+
+Si quieres usar una interfaz web para enviar archivos, se incluye una app React mínima en `frontend/` y un pequeño proxy HTTP en `frontend_api/` que usa `src.app.cliente.send_file` para enviar archivos al servidor de transporte.
+
+Pasos resumidos:
+
+```powershell
+# Instalar dependencias del API proxy
+cd frontend_api
+pip install -r requirements.txt
+
+# Iniciar el API proxy (por defecto en http://localhost:8000)
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+# En otra terminal, iniciar el servidor de transporte (por ejemplo)
+python ejecutar_programa.py servidor
+
+# Instalar e iniciar la app React
+cd ..\frontend
+npm install
+npm run dev
+
+# Abrir http://localhost:5173 en tu navegador
+```
+
+La app sube un archivo y hace POST a `/send`. El proxy guarda temporalmente el archivo y llama a `send_file` para enviarlo al servidor de transporte (puerto 9000 por defecto).
 
 **✅ Ventajas del ejecutor automático:**
 - Configura automáticamente el entorno

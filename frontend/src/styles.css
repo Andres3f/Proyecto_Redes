@@ -1,0 +1,6 @@
+body { font-family: Arial, sans-serif; padding: 24px; background: #f7fafc; color: #111827 }
+.container { max-width: 680px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 6px 18px rgba(15,23,42,0.06) }
+.actions { margin-top: 12px }
+button { background: #0369a1; color: white; border: none; padding: 10px 14px; border-radius: 6px; cursor: pointer }
+.status { margin-top: 16px; font-weight: 600 }
+.note { margin-top: 12px; font-size: 0.9em; color: #6b7280 }
