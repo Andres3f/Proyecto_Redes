@@ -86,7 +86,7 @@ cd frontend_api
 pip install -r requirements.txt
 uvicorn main:app --host 127.0.0.1 --port 8000
 # En otra terminal:
-cd ../frontend
+cd frontend
 npm install
 npm run dev
 ```
