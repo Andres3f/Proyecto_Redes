@@ -1,3 +1,36 @@
+# 🟢 Pasos para iniciar la interfaz web y servicios
+
+Para que la interfaz web funcione correctamente y puedas enviar/recibir archivos e imágenes, sigue este orden recomendado:
+
+1. **Inicia el servidor de transporte** (necesario para la transferencia de archivos e imágenes):
+   ```powershell
+   python ejecutar_programa.py servidor
+   ```
+
+2. **Inicia el API proxy (FastAPI)** (necesario para la interfaz web y el chat):
+   ```powershell
+   cd frontend_api
+   pip install -r requirements.txt
+   uvicorn main:app --host 127.0.0.1 --port 8000
+   ```
+
+3. **Inicia el frontend (React/Vite)**:
+   ```powershell
+   cd ../frontend
+   npm install
+   npm run dev
+   ```
+
+4. **Abre la interfaz web** en tu navegador:
+   - [http://localhost:5173](http://localhost:5173)
+
+5. **Recomendaciones y notas**:
+   - Asegúrate de que los tres servicios estén corriendo antes de probar la interfaz.
+   - Si vas a enviar imágenes, el backend las guarda automáticamente en la carpeta `received/` y las muestra en el chat.
+   - Si tienes problemas de conexión, revisa que los puertos 9000 (servidor), 8000 (API) y 5173 (frontend) estén libres y sin bloqueos de firewall.
+   - Puedes abrir dos ventanas del frontend para simular dos usuarios y probar el chat y la transferencia.
+
+**¡Con estos pasos tendrás la interfaz y los servicios funcionando de forma óptima!**
 # Proyecto de Redes - Implementación de Capas de Red
 
 Este proyecto implementa un sistema de comunicación basado en el modelo de referencia OSI, enfocado en las capas de transporte, sesión y aplicación para transferencia confiable de archivos y mensajes de control.
