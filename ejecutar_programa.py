@@ -24,7 +24,7 @@ class ProgramaRedes:
         self.directorio_recibidos = Path("received")
         self.directorio_recibidos.mkdir(exist_ok=True)
         
-    async def manejar_mensaje_servidor(self, data, writer):
+    async def manejar_mensaje_servidor(self, data, writer, transport=None):
         """Maneja los mensajes recibidos en el servidor"""
         try:
             # Intentar decodificar como JSON (mensaje de control)
