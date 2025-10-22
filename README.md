@@ -1,13 +1,162 @@
-# 🟢 Pasos para iniciar la interfaz web y servicios
+# Proyecto Redes - Sistema de Transferencia de Archivos
 
-Para que la interfaz web funcione correctamente y puedas enviar/recibir archivos e imágenes, sigue este orden recomendado:
+Este proyecto implementa un sistema de transferencia de archivos con una arquitectura cliente-servidor, utilizando Docker para su despliegue.
 
-1. **Inicia el servidor de transporte** (necesario para la transferencia de archivos e imágenes):
-   ```powershell
-   python ejecutar_programa.py servidor
-   ```
+## Estructura del Proyecto
 
-2. **Inicia el API proxy (FastAPI)** (necesario para la interfaz web y el chat):
+```
+.
+├── docker-compose.yml          # Configuración de servicios Docker
+├── Dockerfile.python          # Dockerfile para servicios Python
+├── ejecutar_programa.py       # Script principal del servidor
+├── image_server.py           # Servidor de imágenes
+├── requirements.txt          # Dependencias Python principales
+├── docs/                    # Documentación
+│   ├── especificaciones.md
+│   └── ROADMAP.md
+├── frontend/               # Interfaz de usuario web
+│   ├── Dockerfile
+│   ├── src/
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   ├── index.html
+│   └── nginx.conf
+├── frontend_api/          # API para el frontend
+│   ├── main.py
+│   └── requirements.txt
+├── src/                  # Código fuente principal
+│   ├── app/
+│   │   └── cliente.py
+│   ├── enlace/
+│   ├── red/
+│   ├── sesion/
+│   └── transporte/
+│       ├── fragmentation.py
+│       └── reliable.py
+└── tests/               # Pruebas unitarias
+    ├── test_fragmentation.py
+    └── test_transfer.py
+```
+
+## Requisitos
+
+- Docker
+- Docker Compose
+
+## Ejecución del Proyecto
+
+### Ejecución Local
+
+1. Clona el repositorio:
+```bash
+git clone https://github.com/Andres3f/Proyecto_Redes.git
+cd Proyecto_Redes
+```
+
+2. Inicia los servicios con Docker Compose:
+```bash
+docker compose up --build
+```
+
+### Ejecución en Múltiples Máquinas
+
+Para ejecutar el proyecto en múltiples máquinas de forma segura:
+
+1. En cada máquina, clona el repositorio:
+```bash
+git clone https://github.com/Andres3f/Proyecto_Redes.git
+cd Proyecto_Redes
+```
+
+2. Configura la red de forma segura usando el script proporcionado:
+```bash
+python scripts/configure_network.py
+```
+Este script:
+- Detecta automáticamente la IP local
+- Valida que la IP sea segura y apropiada
+- Verifica la disponibilidad de puertos
+- Configura el archivo .env
+- Proporciona recomendaciones de seguridad
+
+3. Configura el firewall (importante):
+   - Windows:
+     ```powershell
+     # Permitir puertos específicos
+     New-NetFirewallRule -DisplayName "Proyecto_Redes_Frontend" -Direction Inbound -LocalPort 5173 -Protocol TCP -Action Allow
+     New-NetFirewallRule -DisplayName "Proyecto_Redes_API" -Direction Inbound -LocalPort 8000 -Protocol TCP -Action Allow
+     New-NetFirewallRule -DisplayName "Proyecto_Redes_Transport" -Direction Inbound -LocalPort 9000 -Protocol TCP -Action Allow
+     New-NetFirewallRule -DisplayName "Proyecto_Redes_ImgServer" -Direction Inbound -LocalPort 9001 -Protocol TCP -Action Allow
+     ```
+2. Configura el archivo `.env` en cada máquina:
+   - En la máquina servidor (que ejecutará todos los servicios):
+     ```env
+     HOST_IP=<IP_DE_LA_MAQUINA_SERVIDOR>
+     ```
+   - En las máquinas cliente:
+     ```env
+     HOST_IP=<IP_DE_LA_MAQUINA_SERVIDOR>
+     ```
+   Reemplaza `<IP_DE_LA_MAQUINA_SERVIDOR>` con la dirección IP real de la máquina servidor.
+
+3. En la máquina servidor, inicia todos los servicios:
+```bash
+docker compose up --build
+```
+
+4. En los clientes, accede al frontend a través del navegador:
+```
+http://<IP_DE_LA_MAQUINA_SERVIDOR>:5173
+```
+
+Esto iniciará todos los servicios necesarios:
+- Frontend (React): http://localhost:5173
+- API del Frontend: http://localhost:8000
+- Servidor de Transporte: puerto 9000
+- Servidor de Imágenes: puerto 9001
+
+## Servicios
+
+### Frontend
+- Interfaz web construida con React
+- Permite la conexión de usuarios y transferencia de archivos
+- Se ejecuta en Nginx para producción
+
+### Frontend API
+- Implementado con FastAPI
+- Maneja la comunicación WebSocket para chat
+- Gestiona la transferencia de archivos
+- Coordina la comunicación entre el frontend y los servidores
+
+### Servidor de Transporte
+- Maneja la lógica de transferencia de archivos
+- Implementa fragmentación y control de confiabilidad
+- Gestiona las conexiones de red
+
+### Servidor de Imágenes
+- Almacena y gestiona las imágenes transferidas
+- Proporciona servicios de almacenamiento persistente
+
+## Funcionalidades
+
+- Chat en tiempo real entre usuarios
+- Transferencia de archivos con fragmentación
+- Modos de transferencia:
+  - FIABLE: Garantiza la entrega completa
+  - SEMI-FIABLE: Permite pérdida de paquetes controlada
+- Soporte para compresión de archivos
+- Interfaz web intuitiva
+
+## Desarrollo
+
+Para desarrollo local, los servicios están configurados con hot-reload:
+- El frontend se actualiza automáticamente con cambios en el código
+- La API se recarga cuando se modifican los archivos Python
+- Los volúmenes Docker están configurados para desarrollo en tiempo real
+
+## Configuración
+
+Los servicios se pueden configurar a través de variables de entorno en el `docker-compose.yml`.
    ```powershell
    cd frontend_api
    pip install -r requirements.txt
