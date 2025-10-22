@@ -1,0 +1,58 @@
+version: '3.8'
+services:
+  frontend_api:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    container_name: proyecto_frontend_api
+    working_dir: /app/frontend_api
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--proxy-headers"]
+    volumes:
+      - ./:/app:cached
+      - received:/app/received
+    ports:
+      - "8000:8000"
+    environment:
+      - CORS_ORIGINS=http://localhost:5173
+    depends_on:
+      - transport
+      - imgserver
+
+  transport:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    container_name: proyecto_transport
+    working_dir: /app
+    command: ["python", "ejecutar_programa.py", "servidor"]
+    volumes:
+      - ./:/app:cached
+    ports:
+      - "9000:9000"
+    depends_on:
+      - imgserver
+
+  imgserver:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    container_name: proyecto_imgserver
+    working_dir: /app
+    command: ["python", "image_server.py"]
+    volumes:
+      - ./:/app:cached
+    ports:
+      - "9001:9001"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: proyecto_frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - frontend_api
+
+volumes:
+  received:
