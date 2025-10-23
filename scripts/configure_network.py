@@ -32,6 +32,15 @@ def validate_ip(ip):
             return False
         if ip_obj.is_unspecified:
             print("Error: IP no especificada")
+
+            print("Advertencia: La IP es una dirección de loopback")
+            return False
+        if ip_obj.is_multicast:
+            print("Error: No se permiten IPs multicast")
+            return False
+        if ip_obj.is_unspecified:
+            print("Error: IP no especificada")
+
             return False
             
         # Verificar que la IP pertenezca a la red local
@@ -64,7 +73,7 @@ def check_ngrok_token():
         content = f.read()
         
     if 'NGROK_AUTHTOKEN=' in content and not content.split('NGROK_AUTHTOKEN=')[1].split('\n')[0].strip():
-        print("⚠️ NGROK_AUTHTOKEN no está configurado en el archivo .env")
+        print("NGROK_AUTHTOKEN no está configurado en el archivo .env")
         token = input("Por favor, ingresa tu token de ngrok (regístrate en https://ngrok.com): ").strip()
         
         if token:
@@ -79,7 +88,7 @@ def configure_network():
     """Configura la red de forma segura"""
     # Verificar token de ngrok
     if not check_ngrok_token():
-        print("❌ Error: Se requiere un token de ngrok para el acceso remoto")
+        print("Error: Se requiere un token de ngrok para el acceso remoto")
         return False
 
     # Detectar IP local
