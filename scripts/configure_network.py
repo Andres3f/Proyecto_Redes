@@ -32,6 +32,14 @@ def validate_ip(ip):
             return False
         if ip_obj.is_unspecified:
             print("Error: IP no especificada")
+            print("Advertencia: La IP es una dirección de loopback")
+            return False
+        if ip_obj.is_multicast:
+            print("Error: No se permiten IPs multicast")
+            return False
+        if ip_obj.is_unspecified:
+            print("Error: IP no especificada")
+
             return False
             
         # Verificar que la IP pertenezca a la red local
