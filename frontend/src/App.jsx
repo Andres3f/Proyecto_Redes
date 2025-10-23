@@ -23,7 +23,8 @@ export default function App() {
   // Conectar WebSocket
   const connectWebSocket = () => {
     if (username.trim()) {
-      const ws = new WebSocket(`ws://${window.location.hostname}:8000/ws`)
+      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+      const ws = new WebSocket(`${wsProtocol}//${window.location.host}/api/ws`)
       ws.onopen = () => {
         ws.send(JSON.stringify({ type: 'register', username }))
         ws.send(JSON.stringify({ type: 'list' }))

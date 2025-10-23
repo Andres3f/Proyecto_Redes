@@ -42,6 +42,7 @@ Este proyecto implementa un sistema de transferencia de archivos con una arquite
 
 - Docker
 - Docker Compose
+- Cuenta en ngrok.com (gratuita)
 
 ## Ejecución del Proyecto
 
