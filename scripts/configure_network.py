@@ -64,7 +64,7 @@ def check_ngrok_token():
         content = f.read()
         
     if 'NGROK_AUTHTOKEN=' in content and not content.split('NGROK_AUTHTOKEN=')[1].split('\n')[0].strip():
-        print("⚠️ NGROK_AUTHTOKEN no está configurado en el archivo .env")
+        print("NGROK_AUTHTOKEN no está configurado en el archivo .env")
         token = input("Por favor, ingresa tu token de ngrok (regístrate en https://ngrok.com): ").strip()
         
         if token:
@@ -79,13 +79,13 @@ def configure_network():
     """Configura la red de forma segura"""
     # Verificar token de ngrok
     if not check_ngrok_token():
-        print("❌ Error: Se requiere un token de ngrok para el acceso remoto")
+        print("Error: Se requiere un token de ngrok para el acceso remoto")
         return False
 
     # Detectar IP local
     local_ip = get_local_ip()
     if not local_ip:
-        print("❌ Error: No se pudo detectar la IP local")
+        print("Error: No se pudo detectar la IP local")
         return False
 
     print(f"IP local detectada: {local_ip}")

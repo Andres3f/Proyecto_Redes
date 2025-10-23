@@ -43,6 +43,7 @@ import json
 
 from fastapi import Form
 from typing import Optional
+import uuid
 
 @app.post('/send')
 async def send(
@@ -211,6 +212,15 @@ async def websocket_endpoint(websocket: WebSocket):
     # registrar
         connections[username] = websocket
 
+    # Enviar IP asignada al usuario
+        headers = websocket.headers
+        # Intentar obtener la IP real del cliente a través de los headers
+        client_ip = headers.get('x-real-ip') or headers.get('x-forwarded-for', '').split(',')[0].strip() or websocket.client.host
+        await websocket.send_text(json.dumps({
+            'type': 'ip_assigned',
+            'ip': client_ip
+        }))
+
     # entregar mensajes pendientes
         pending = undelivered.pop(username, [])
         for msg in pending:
@@ -227,10 +237,25 @@ async def websocket_endpoint(websocket: WebSocket):
 
             if pkt.get('type') == 'message':
                 to = pkt.get('to')
+                # Crear información de simulación de capas
+                session_id = str(uuid.uuid4())[:8]
+                sequence_number = len(undelivered.get(to, [])) + 1
+                source_ip = client_ip
+                dest_ip = connections[to].client.host if to in connections else "unknown"
+                
+                # Mensaje con información de capas para simulación
                 out = {
                     'type': 'message',
                     'from': username,
                     'msg': pkt.get('msg', ''),
+                    'layerInfo': {
+                        'sessionId': session_id,
+                        'sequence': sequence_number,
+                        'reliable': True,
+                        'fragmentId': f"MSG-{sequence_number}",
+                        'sourceIp': source_ip,
+                        'destIp': dest_ip
+                    }
                 }
                 ws_to = connections.get(to)
                 if ws_to:
