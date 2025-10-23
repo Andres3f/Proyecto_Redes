@@ -32,7 +32,6 @@ def validate_ip(ip):
             return False
         if ip_obj.is_unspecified:
             print("Error: IP no especificada")
-
             print("Advertencia: La IP es una dirección de loopback")
             return False
         if ip_obj.is_multicast:
@@ -94,7 +93,7 @@ def configure_network():
     # Detectar IP local
     local_ip = get_local_ip()
     if not local_ip:
-        print("❌ Error: No se pudo detectar la IP local")
+        print("Error: No se pudo detectar la IP local")
         return False
 
     print(f"IP local detectada: {local_ip}")

@@ -1,0 +1,56 @@
+.layer-visualization {
+  padding: 10px;
+  transition: all 0.3s ease;
+}
+
+.layers-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.layer {
+  transition: all 0.3s ease;
+  transform-origin: center left;
+}
+
+.layer:hover {
+  transform: scale(1.02);
+}
+
+.layer-name {
+  font-size: 0.9em;
+  margin-bottom: 5px;
+}
+
+.layer-headers {
+  font-family: monospace;
+  font-size: 0.85em;
+  line-height: 1.4;
+}
+
+/* Animación para cuando se está simulando */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.layer-visualization.active .layer {
+  animation: pulse 1s infinite;
+}
+
+.layer-headers div {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

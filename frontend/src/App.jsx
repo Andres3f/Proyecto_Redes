@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react'
 import './styles.css'
+import LayerVisualization from './components/LayerVisualization'
 
 export default function App() {
   // Estados para chat (manteniendo el diseño original)
   const [username, setUsername] = useState('')
   const [connected, setConnected] = useState(false)
   const [socket, setSocket] = useState(null)
+  const [userIP, setUserIP] = useState('')
   // Cambiamos a un objeto: { usuario: [ {from, to, content} ] }
   const [chatHistory, setChatHistory] = useState({})
   // Estado para mensajes no leídos: { usuario: cantidad }
@@ -19,6 +21,8 @@ export default function App() {
   const [transferStats, setTransferStats] = useState(null)
   const [transferMode, setTransferMode] = useState('FIABLE')
   const fileInputRef = useRef(null)
+  const [simulationData, setSimulationData] = useState(null)
+  const [isSimulating, setIsSimulating] = useState(false)
   
   // Conectar WebSocket
   const connectWebSocket = () => {
@@ -33,7 +37,9 @@ export default function App() {
       }
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data)
-        if (data.type === 'message') {
+        if (data.type === 'ip_assigned') {
+          setUserIP(data.ip)
+        } else if (data.type === 'message') {
           // Determinar el otro usuario de la conversación
           const from = data.from || data.username || 'Desconocido'
           const to = data.to || username
@@ -89,12 +95,33 @@ export default function App() {
   // Enviar mensaje SOLO al usuario seleccionado
   const sendMessage = () => {
     if (socket && newMessage.trim() && selectedUser) {
+      // Iniciar simulación
+      setIsSimulating(true)
+      const initialSimData = {
+        type: 'message',
+        from: username,
+        to: selectedUser,
+        sessionId: 'simulando...',
+        sequence: '...',
+        reliable: true,
+        fragmentId: '...',
+        sourceIp: userIP,
+        destIp: '...'
+      }
+      setSimulationData(initialSimData)
+
       // Enviar por WebSocket
       socket.send(JSON.stringify({
         type: 'message',
         to: selectedUser,
         msg: newMessage
       }))
+      
+      // Terminar simulación después de 2 segundos
+      setTimeout(() => {
+        setIsSimulating(false)
+      }, 2000)
+
       // Mostrarlo inmediatamente en el historial local
       setChatHistory(prev => {
         const prevMsgs = prev[selectedUser] || []
@@ -212,7 +239,10 @@ export default function App() {
         </div>
       ) : (
         <div style={{ marginBottom: '20px' }}>
-          <span>Conectado como <strong>{username}</strong></span>
+          <span>
+            Conectado como <strong>{username}</strong>
+            {userIP && <span style={{ marginLeft: '10px', color: '#666' }}>(IP: {userIP})</span>}
+          </span>
           <button 
             onClick={disconnectWebSocket} 
             style={{ marginLeft: '10px', padding: '4px 12px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px' }}
@@ -292,6 +322,22 @@ export default function App() {
               {uploadStatus}
             </div>
           )}
+        </div>
+        {/* Simulación de Capas */}
+        <div style={{ flex: 1.5 }}>
+          <h3>Visualización de Capas</h3>
+          <div style={{ 
+            border: '1px solid #ccc',
+            padding: '10px',
+            height: '300px',
+            backgroundColor: '#f9f9f9',
+            overflowY: 'auto'
+          }}>
+            <LayerVisualization 
+              packetData={simulationData}
+              isActive={isSimulating}
+            />
+          </div>
         </div>
         {/* Usuarios */}
         <div style={{ flex: 1 }}>
