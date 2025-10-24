@@ -34,9 +34,10 @@ if not os.path.exists(received_dir):
     os.makedirs(received_dir)
 app.mount('/received', StaticFiles(directory=received_dir), name='received')
 
-# Registros en memoria: username -> websocket, y mensajes no entregados
+# Registros en memoria: username -> websocket, mensajes no entregados y mapeo de IPs
 connections = {}
 undelivered = {}
+user_ips = {}  # Diccionario global para mantener las IPs de los usuarios
 
 from fastapi import WebSocket, WebSocketDisconnect
 import json
@@ -195,8 +196,8 @@ async def send_image_with_config(host: str, port: int, filepath: str, mode: str,
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     username = None
+    
     try:
-    # El primer mensaje debe ser el JSON de registro: {"type":"register","username":"alice"}
         data = await websocket.receive_text()
         try:
             packet = json.loads(data)
@@ -209,17 +210,39 @@ async def websocket_endpoint(websocket: WebSocket):
             return
 
         username = packet['username']
-    # registrar
+    # registrar conexión y actualizar IP
         connections[username] = websocket
-
-    # Enviar IP asignada al usuario
+        
+        # Obtener y guardar IP del usuario
         headers = websocket.headers
-        # Intentar obtener la IP real del cliente a través de los headers
-        client_ip = headers.get('x-real-ip') or headers.get('x-forwarded-for', '').split(',')[0].strip() or websocket.client.host
+        client_ip = (
+            headers.get('x-real-ip') or 
+            headers.get('x-forwarded-for', '').split(',')[0].strip() or 
+            websocket.client.host or 
+            '127.0.0.1'
+        )
+        
+        # Guardar IP del usuario
+        user_ips[username] = client_ip
+        print(f"[WebSocket] Usuario {username} registrado con IP: {client_ip}")
+        
+        # Notificar IP asignada al usuario
         await websocket.send_text(json.dumps({
             'type': 'ip_assigned',
-            'ip': client_ip
+            'ip': client_ip,
+            'username': username
         }))
+        
+        # Notificar a todos los usuarios conectados la actualización de IPs
+        for ws in connections.values():
+            try:
+                await ws.send_text(json.dumps({
+                    'type': 'user_list_update',
+                    'users': list(connections.keys()),
+                    'userIPs': user_ips
+                }))
+            except Exception as e:
+                print(f"[WebSocket] Error al actualizar lista de usuarios: {e}")
 
     # entregar mensajes pendientes
         pending = undelivered.pop(username, [])
@@ -240,13 +263,16 @@ async def websocket_endpoint(websocket: WebSocket):
                 # Crear información de simulación de capas
                 session_id = str(uuid.uuid4())[:8]
                 sequence_number = len(undelivered.get(to, [])) + 1
-                source_ip = client_ip
-                dest_ip = connections[to].client.host if to in connections else "unknown"
+                source_ip = user_ips.get(username, client_ip)
+                dest_ip = user_ips.get(to, "unknown")
+                
+                print(f"[WebSocket] Enviando mensaje de {username}({source_ip}) a {to}({dest_ip})")
                 
                 # Mensaje con información de capas para simulación
                 out = {
                     'type': 'message',
                     'from': username,
+                    'to': to,  # Añadir el destinatario explícitamente
                     'msg': pkt.get('msg', ''),
                     'layerInfo': {
                         'sessionId': session_id,
@@ -254,9 +280,12 @@ async def websocket_endpoint(websocket: WebSocket):
                         'reliable': True,
                         'fragmentId': f"MSG-{sequence_number}",
                         'sourceIp': source_ip,
-                        'destIp': dest_ip
+                        'destIp': dest_ip,
+                        'sourceUser': username,
+                        'destUser': to
                     }
                 }
+                print(f"[WebSocket] Enviando mensaje con capas: {out['layerInfo']}")
                 ws_to = connections.get(to)
                 if ws_to:
                     try:
@@ -268,12 +297,23 @@ async def websocket_endpoint(websocket: WebSocket):
                     undelivered.setdefault(to, []).append(out)
 
             elif pkt.get('type') == 'list':
-                # devolver lista de usuarios activos
+                # devolver lista de usuarios activos y sus IPs
                 users = list(connections.keys())
-                await websocket.send_text(json.dumps({'type': 'list', 'users': users}))
+                print(f"[WebSocket] Enviando lista de usuarios a {username}. IPs actuales: {user_ips}")
+                await websocket.send_text(json.dumps({
+                    'type': 'list',
+                    'users': users,
+                    'userIPs': user_ips,
+                    'currentUser': username
+                }))
 
     except WebSocketDisconnect:
-        pass
+        if username and connections.get(username) is websocket:
+            del connections[username]
+            if username in user_ips:
+                del user_ips[username]
     finally:
         if username and connections.get(username) is websocket:
             del connections[username]
+            if username in user_ips:
+                del user_ips[username]
