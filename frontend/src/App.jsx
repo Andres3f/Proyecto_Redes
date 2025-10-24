@@ -13,6 +13,7 @@ export default function App() {
   // Estado para mensajes no leídos: { usuario: cantidad }
   const [unread, setUnread] = useState({})
   const [users, setUsers] = useState([])
+  const [userIPs, setUserIPs] = useState({})  // Mapeo de usuarios a IPs
   const [newMessage, setNewMessage] = useState('')
   const [selectedUser, setSelectedUser] = useState('')
 
@@ -23,12 +24,35 @@ export default function App() {
   const fileInputRef = useRef(null)
   const [simulationData, setSimulationData] = useState(null)
   const [isSimulating, setIsSimulating] = useState(false)
+  const [ngrokUrl, setNgrokUrl] = useState('')
+
+  // Obtener URL de ngrok al cargar
+  useEffect(() => {
+    const getNgrokUrl = async () => {
+      try {
+        const response = await fetch('http://localhost:4040/api/tunnels')
+        const data = await response.json()
+        const url = data.tunnels[0]?.public_url
+        if (url) {
+          setNgrokUrl(url)
+          console.log('Ngrok URL:', url)
+        }
+      } catch (error) {
+        console.warn('No se pudo obtener la URL de ngrok:', error)
+      }
+    }
+    getNgrokUrl()
+  }, [])
   
   // Conectar WebSocket
   const connectWebSocket = () => {
     if (username.trim()) {
       const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-      const ws = new WebSocket(`${wsProtocol}//${window.location.host}/api/ws`)
+      // Si tenemos URL de ngrok, usarla; si no, usar la URL relativa
+      const wsUrl = ngrokUrl 
+        ? `${ngrokUrl.replace('http', 'ws')}/api/ws`
+        : `${wsProtocol}//${window.location.host}/api/ws`
+      const ws = new WebSocket(wsUrl)
       ws.onopen = () => {
         ws.send(JSON.stringify({ type: 'register', username }))
         ws.send(JSON.stringify({ type: 'list' }))
@@ -39,6 +63,11 @@ export default function App() {
         const data = JSON.parse(event.data)
         if (data.type === 'ip_assigned') {
           setUserIP(data.ip)
+          // Actualizar el IP del usuario actual en el mapeo
+          setUserIPs(prev => ({
+            ...prev,
+            [username]: data.ip
+          }))
         } else if (data.type === 'message') {
           // Determinar el otro usuario de la conversación
           const from = data.from || data.username || 'Desconocido'
@@ -62,8 +91,35 @@ export default function App() {
               [from]: (prev[from] || 0) + 1
             }))
           }
+
+          // Actualizar simulación si el mensaje tiene información de capas
+          if (data.layerInfo) {
+            setIsSimulating(true);
+            setSimulationData({
+              type: 'message',
+              from: from,
+              to: to,
+              msg: data.msg || data.content || '',
+              layerInfo: data.layerInfo
+            });
+            
+            // Desactivar simulación después de 2 segundos
+            setTimeout(() => {
+              setIsSimulating(false);
+            }, 2000);
+          }
         } else if (data.type === 'list' || data.type === 'user_list') {
-          setUsers(data.users || [])
+          const userList = data.users || [];
+          setUsers(userList)
+          // Cuando obtenemos la lista de usuarios, guardar sus IPs
+          userList.forEach(user => {
+            if (data.userIPs && data.userIPs[user]) {
+              setUserIPs(prev => ({
+                ...prev,
+                [user]: data.userIPs[user]
+              }))
+            }
+          })
         }
       }
       ws.onclose = () => {
@@ -101,13 +157,19 @@ export default function App() {
         type: 'message',
         from: username,
         to: selectedUser,
-        sessionId: 'simulando...',
-        sequence: '...',
-        reliable: true,
-        fragmentId: '...',
-        sourceIp: userIP,
-        destIp: '...'
+        msg: newMessage,
+        layerInfo: {
+          sessionId: Math.random().toString(36).substr(2, 8),
+          sequence: 1,
+          reliable: true,
+          fragmentId: 'MSG-1',
+          sourceIp: userIPs[username] || userIP,
+          destIp: userIPs[selectedUser] || 'desconocido',
+          sourceUser: username,
+          destUser: selectedUser
+        }
       }
+      console.log('Simulation data:', initialSimData);
       setSimulationData(initialSimData)
 
       // Enviar por WebSocket
@@ -150,13 +212,39 @@ export default function App() {
   const uploadImage = async (file) => {
     if (!file || !selectedUser) return
     const formData = new FormData()
-  formData.append('file', file)
-  formData.append('transfer_mode', transferMode)
-  formData.append('chunk_size', '4096')
-  formData.append('max_retries', '3')
+    formData.append('file', file)
+    formData.append('transfer_mode', transferMode)
+    formData.append('chunk_size', '4096')
+    formData.append('max_retries', '3')
+    
+    // Iniciar simulación
+    setIsSimulating(true)
+    const sessionId = Math.random().toString(36).substr(2, 8);
+    const fileSize = file.size;
+    const estimatedChunks = Math.ceil(fileSize / 4096);
+    
+    const simulationPacket = {
+      type: 'image_upload',
+      from: username,
+      to: selectedUser,
+      sessionId: sessionId,
+      sequence: `0/${estimatedChunks}`,
+      reliable: transferMode === 'FIABLE',
+      fragmentId: `IMG-${Date.now()}`,
+      sourceIp: userIP,
+      destIp: userIPs[selectedUser] || '172.20.0.3',
+      size: fileSize,
+      progress: 0,
+      retries: 0,
+      ackReceived: false
+    }
+    setSimulationData(simulationPacket)
+
     try {
       setUploadStatus('Subiendo imagen...')
-      const response = await fetch('http://localhost:8000/upload-image', {
+      // Usar URL de ngrok si está disponible, si no usar ruta relativa
+      const baseUrl = ngrokUrl || ''
+      const response = await fetch(`${baseUrl}/api/upload-image`, {
         method: 'POST',
         body: formData
       })
@@ -164,6 +252,25 @@ export default function App() {
       if (result.status === 'sent') {
         setUploadStatus(`✅ Imagen enviada: ${result.filename}`)
         setTransferStats(result.stats)
+        
+        // Actualizar simulación con datos reales
+        if (result.stats) {
+          const totalChunks = result.stats.total_chunks || 1;
+          const sentChunks = result.stats.sent_chunks || 1;
+          const progress = Math.round((sentChunks / totalChunks) * 100);
+          
+          setSimulationData(prev => ({
+            ...prev,
+            reliable: transferMode === 'FIABLE',
+            fragmentId: `IMG-${result.stats.chunks || 1}`,
+            sequence: `${sentChunks}/${totalChunks}`,
+            progress: progress,
+            retries: result.stats.retries || 0,
+            ackReceived: result.stats.acks_received > 0,
+            size: result.stats.total_bytes || file.size
+          }))
+        }
+        
         // Enviar mensaje de imagen al usuario seleccionado
         if (socket) {
           // Suponiendo que el backend guarda la imagen en /received/<filename>
@@ -172,7 +279,9 @@ export default function App() {
             setTimeout(() => setUploadStatus(''), 5000);
             return;
           }
-          const imageUrl = `http://localhost:8000/received/${result.filename}`
+          // Construir la URL de la imagen usando el mismo host de la API
+          const baseUrl = ngrokUrl || ''
+          const imageUrl = `${baseUrl}/api/received/${result.filename}`
           const imageMsg = `<img src='${imageUrl}' alt='imagen' style='max-width:200px;max-height:200px;' />`
           socket.send(JSON.stringify({
             type: 'message',
@@ -192,7 +301,11 @@ export default function App() {
             }
           })
         }
-        setTimeout(() => setUploadStatus(''), 3000)
+        // Mantener la simulación por 2 segundos más y luego terminar
+        setTimeout(() => {
+          setIsSimulating(false)
+          setUploadStatus('')
+        }, 3000)
       } else {
         setUploadStatus(`❌ Error: ${result.error || 'No se pudo enviar la imagen.'}`)
         setTimeout(() => setUploadStatus(''), 5000)
@@ -200,6 +313,8 @@ export default function App() {
     } catch (error) {
       setUploadStatus(`❌ Error: ${error.message}`)
       setTimeout(() => setUploadStatus(''), 5000)
+      // Terminar simulación en caso de error
+      setIsSimulating(false)
     }
   }
   
