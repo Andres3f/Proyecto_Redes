@@ -1,21 +1,33 @@
 import React, { useState, useRef, useEffect } from 'react'
-import './styles.css'
+import './styles_new.css'
 import LayerVisualization from './components/LayerVisualization'
 
+// Icono para el modo oscuro usando un SVG personalizado
+const ModeNightIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+  </svg>
+)
+
 export default function App() {
-  // Estados para chat (manteniendo el diseño original)
+  // Estados para autenticación y conexión
   const [username, setUsername] = useState('')
   const [connected, setConnected] = useState(false)
   const [socket, setSocket] = useState(null)
   const [userIP, setUserIP] = useState('')
-  // Cambiamos a un objeto: { usuario: [ {from, to, content} ] }
-  const [chatHistory, setChatHistory] = useState({})
-  // Estado para mensajes no leídos: { usuario: cantidad }
-  const [unread, setUnread] = useState({})
+  const [darkMode, setDarkMode] = useState(() => {
+    const savedTheme = localStorage.getItem('theme')
+    return savedTheme === 'dark'
+  })
+  
+  // Estados para el chat
+  const [chatHistory, setChatHistory] = useState({}) // { usuario: [ {from, to, content} ] }
+  const [unread, setUnread] = useState({}) // { usuario: cantidad }
   const [users, setUsers] = useState([])
-  const [userIPs, setUserIPs] = useState({})  // Mapeo de usuarios a IPs
+  const [userIPs, setUserIPs] = useState({}) // Mapeo de usuarios a IPs
   const [newMessage, setNewMessage] = useState('')
   const [selectedUser, setSelectedUser] = useState('')
+  const messagesEndRef = useRef(null) // Para auto-scroll
 
   // Estados para funcionalidad de imágenes y modo de envío
   const [uploadStatus, setUploadStatus] = useState('')
@@ -25,6 +37,24 @@ export default function App() {
   const [simulationData, setSimulationData] = useState(null)
   const [isSimulating, setIsSimulating] = useState(false)
   const [ngrokUrl, setNgrokUrl] = useState('')
+
+  // Efecto para manejar el cambio de tema
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.setAttribute('data-theme', 'dark')
+      document.body.setAttribute('data-theme', 'dark')
+    } else {
+      document.documentElement.setAttribute('data-theme', 'light')
+      document.body.setAttribute('data-theme', 'light')
+    }
+    localStorage.setItem('theme', darkMode ? 'dark' : 'light')
+    console.log('Tema cambiado a:', darkMode ? 'dark' : 'light') // Para debugging
+  }, [darkMode])
+
+  // Función para alternar el modo oscuro
+  const toggleDarkMode = () => {
+    setDarkMode(prev => !prev)
+  }
 
   // Obtener URL de ngrok al cargar
   useEffect(() => {
@@ -336,8 +366,18 @@ export default function App() {
   }
   
   return (
-    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
-      <h1>Chat — Proyecto Redes</h1>
+    <div className="app-container">
+      <div className="header">
+        <h1>Chat — Proyecto Redes</h1>
+        <button 
+          onClick={toggleDarkMode} 
+          className="theme-toggle"
+          aria-label="Alternar modo oscuro"
+          title={darkMode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+        >
+          <ModeNightIcon />
+        </button>
+      </div>
       {!connected ? (
         <div style={{ marginBottom: '20px' }}>
           <input
@@ -360,7 +400,7 @@ export default function App() {
           </span>
           <button 
             onClick={disconnectWebSocket} 
-            style={{ marginLeft: '10px', padding: '4px 12px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px' }}
+            className="action-button"
           >
             Desconectar
           </button>
@@ -370,12 +410,12 @@ export default function App() {
         {/* Mensajes */}
         <div style={{ flex: 2 }}>
           <h3>Mensajes</h3>
-          <div style={{ border: '1px solid #ccc', padding: '10px', height: '300px', overflowY: 'auto', backgroundColor: '#f9f9f9' }}>
+          <div className="messages">
             {/* Mostrar solo la conversación con el usuario seleccionado */}
             {selectedUser && chatHistory[selectedUser] && chatHistory[selectedUser].length > 0 ? (
               chatHistory[selectedUser].map((msg, index) => (
-                <div key={index} style={{ marginBottom: '8px', textAlign: msg.from === username ? 'right' : 'left' }}>
-                  <span style={{ fontWeight: msg.from === username ? 'bold' : 'normal', color: msg.from === username ? '#007bff' : '#333' }}>
+                <div key={index} className={`message ${msg.from === username ? 'sent' : 'received'}`}>
+                  <span className="message-sender">
                     {msg.from === username ? 'Tú' : msg.from}:
                   </span>{' '}
                   <span dangerouslySetInnerHTML={{ __html: msg.content }} />
@@ -424,16 +464,16 @@ export default function App() {
               </button>
             </div>
               {/* Explicación de modos de transferencia (ahora abajo) */}
-              <div style={{ margin: '10px 0', padding: '10px', background: '#f8f9fa', border: '1px solid #e0e0e0', borderRadius: '6px', fontSize: '13px' }}>
+              <div className="transfer-mode-info">
                 <b>Modo de envío de imagen:</b> <br />
-                <span style={{ color: '#007bff', fontWeight: 500 }}>FIABLE</span>: Entrega garantizada, cada fragmento espera confirmación (ACK), reintentos automáticos. Más lento, pero asegura que la imagen llegue completa.<br />
-                <span style={{ color: '#28a745', fontWeight: 500 }}>SEMI-FIABLE</span>: Envío rápido, sin confirmaciones ni reintentos. Puede perder fragmentos si la red es inestable, pero es mucho más veloz.<br />
-                <span style={{ color: '#888' }}>Recomendado: FIABLE para archivos importantes, SEMI-FIABLE para pruebas o redes estables.</span>
+                <span className="mode-fiable">FIABLE</span>: Entrega garantizada, cada fragmento espera confirmación (ACK), reintentos automáticos. Más lento, pero asegura que la imagen llegue completa.<br />
+                <span className="mode-semi-fiable">SEMI-FIABLE</span>: Envío rápido, sin confirmaciones ni reintentos. Puede perder fragmentos si la red es inestable, pero es mucho más veloz.<br />
+                <span className="mode-recommendation">Recomendado: FIABLE para archivos importantes, SEMI-FIABLE para pruebas o redes estables.</span>
               </div>
             </>
           )}
           {uploadStatus && (
-            <div style={{ marginTop: '10px', padding: '8px', backgroundColor: uploadStatus.includes('❌') ? '#f8d7da' : '#d4edda', border: '1px solid ' + (uploadStatus.includes('❌') ? '#f5c6cb' : '#c3e6cb'), borderRadius: '4px' }}>
+            <div className={`upload-status ${uploadStatus.includes('❌') ? 'error' : 'success'}`}>
               {uploadStatus}
             </div>
           )}
@@ -441,13 +481,7 @@ export default function App() {
         {/* Simulación de Capas */}
         <div style={{ flex: 1.5 }}>
           <h3>Visualización de Capas</h3>
-          <div style={{ 
-            border: '1px solid #ccc',
-            padding: '10px',
-            height: '300px',
-            backgroundColor: '#f9f9f9',
-            overflowY: 'auto'
-          }}>
+          <div className="layer-visualization-panel">
             <LayerVisualization 
               packetData={simulationData}
               isActive={isSimulating}
@@ -457,23 +491,26 @@ export default function App() {
         {/* Usuarios */}
         <div style={{ flex: 1 }}>
           <h3>Usuarios</h3>
-          <div style={{ border: '1px solid #ccc', padding: '10px', height: '300px', backgroundColor: '#f9f9f9' }}>
+          <div className="users-container">
             {users.map((user, index) => (
-              <div key={index} style={{ padding: '4px 0', fontWeight: user === username ? 'bold' : 'normal', color: user === username ? '#007bff' : 'black', cursor: user !== username ? 'pointer' : 'default', background: user === selectedUser && user !== username ? '#e6f7ff' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-                onClick={() => user !== username && handleSelectUser(user)}>
+              <div 
+                key={index} 
+                className={`user-list-item ${user === username ? 'current-user' : ''} ${user === selectedUser && user !== username ? 'selected' : ''}`}
+                onClick={() => user !== username && handleSelectUser(user)}
+              >
                 <span>
                   {user} {user === selectedUser && user !== username ? '← destinatario' : ''}
                 </span>
                 {/* Badge de no leídos */}
                 {user !== username && unread[user] > 0 && (
-                  <span style={{ background: '#ff4136', color: 'white', borderRadius: '50%', minWidth: 18, height: 18, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, marginLeft: 8, padding: '0 6px' }}>
+                  <span className="unread-badge">
                     {unread[user]}
                   </span>
                 )}
               </div>
             ))}
           </div>
-          <div style={{ marginTop: '10px', fontSize: '13px', color: '#888' }}>
+          <div className="user-status-message">
             {selectedUser && selectedUser !== username ? `Enviando a: ${selectedUser}` : 'Haz clic en un usuario para chatear'}
           </div>
         </div>
