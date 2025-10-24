@@ -24,7 +24,7 @@ export default function App() {
   const [chatHistory, setChatHistory] = useState({}) // { usuario: [ {from, to, content} ] }
   const [unread, setUnread] = useState({}) // { usuario: cantidad }
   const [users, setUsers] = useState([])
-  const [userIPs, setUserIPs] = useState({}) // Mapeo de usuarios a IPs
+  const [userIPs, setUserIPs] = useState({})  // Mapeo de usuarios a IPs
   const [newMessage, setNewMessage] = useState('')
   const [selectedUser, setSelectedUser] = useState('')
   const messagesEndRef = useRef(null) // Para auto-scroll
