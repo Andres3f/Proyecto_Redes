@@ -76,7 +76,7 @@ async def on_message(data: bytes, writer, transport):
                 print(f"[IMG SERVER] Imagen parcial guardada: {out_path}.partial")
             else:
                 out_path.write_bytes(assembled)
-                print(f"[IMG SERVER] ✓ Imagen guardada: {out_path}")
+                print(f"[IMG SERVER] Imagen guardada: {out_path}")
 
             return
 

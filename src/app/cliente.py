@@ -83,9 +83,9 @@ async def send_image_fragmented_fiable(host, port, filepath, chunk_size=1024, ma
                     retries += 1
                     print(f"[Cliente] Error esperando ACK chunk {i}: {e}, reintento {retries}/{max_retries}")
             else:
-                print(f"[Cliente] ⚠️ Chunk {i} no fue ACKeado tras {max_retries} intentos")
+                print(f"[Cliente] ADVERTENCIA: Chunk {i} no fue ACKeado tras {max_retries} intentos")
         
-        print(f"[Cliente] ✅ Imagen {filename} enviada completamente")
+        print(f"[Cliente] Imagen {filename} enviada completamente")
         writer.close()
         await writer.wait_closed()
         

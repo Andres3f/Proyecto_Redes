@@ -25,10 +25,10 @@ def _validate_complete_image(filepath: str) -> bool:
     try:
         with Image.open(filepath) as img:
             img.verify()  # Verificar integridad
-        print(f"[VALIDATION] ✓ Imagen válida: {os.path.basename(filepath)}")
+        print(f"[VALIDATION] Imagen válida: {os.path.basename(filepath)}")
         return True
     except Exception as e:
-        print(f"[VALIDATION] ✗ Imagen inválida: {e}")
+        print(f"[VALIDATION] Imagen inválida: {e}")
         return False
 
 def _validate_partial_image(filepath: str, expected_size: int) -> bool:
@@ -42,7 +42,7 @@ def _validate_partial_image(filepath: str, expected_size: int) -> bool:
         # Intentar abrir como imagen para ver si es parcialmente válida
         try:
             with Image.open(filepath) as img:
-                print(f"[VALIDATION] ✓ Imagen parcial reconocible: {img.format} {img.size}")
+                print(f"[VALIDATION] Imagen parcial reconocible: {img.format} {img.size}")
                 return True
         except Exception:
             print(f"[VALIDATION] - Imagen parcial no reconocible como formato válido")
@@ -168,7 +168,7 @@ async def handle_client(reader, writer, mode='FIABLE', loss_rate=0.0, enable_fec
             # Imagen completa
             with open(out_path, 'wb') as f:
                 f.write(assembled)
-            print(f"[IMG SERVER] ✓ Imagen completa guardada: {out_path}")
+            print(f"[IMG SERVER] Imagen completa guardada: {out_path}")
             _validate_complete_image(out_path)
         
         # Registrar estadísticas de rendimiento
@@ -291,7 +291,7 @@ async def client_send_image(host, port, filepath, mode='FIABLE', loss_rate=0.0,
                     total_retries += 1
             
             if not ack_received:
-                print(f"[CLIENT] ✗ Chunk {i} falló tras {max_retries} intentos")
+                print(f"[CLIENT] Chunk {i} falló tras {max_retries} intentos")
         else:
             # Modo SEMI-FIABLE: enviar una vez (el servidor simula pérdidas)
             await send_message(writer, pkt)
@@ -390,7 +390,7 @@ def _generate_performance_report():
         print(f"  Tasa de éxito real: {transfer['success_rate']*100:.1f}%")
         print(f"  Tiempo de transferencia: {transfer['transfer_time']:.2f}s")
         print(f"  Throughput: {transfer['throughput_bps']/1024:.1f} KB/s")
-        print(f"  Completa: {'✓' if transfer['complete'] else '✗'}")
+        print(f"  Completa: {'SI' if transfer['complete'] else 'NO'}")
         print()
     
     # Estadísticas agregadas
@@ -415,7 +415,7 @@ async def run_performance_benchmark(image_paths, chunk_sizes=[512, 1024, 2048], 
     
     for image_path in image_paths:
         if not os.path.exists(image_path):
-            print(f"⚠️  Archivo no encontrado: {image_path}")
+            print(f"ADVERTENCIA: Archivo no encontrado: {image_path}")
             continue
             
         for chunk_size in chunk_sizes:
@@ -426,7 +426,7 @@ async def run_performance_benchmark(image_paths, chunk_sizes=[512, 1024, 2048], 
                         await run_demo(image_path, mode, loss_rate, chunk_size)
                         await asyncio.sleep(0.5)  # Pausa entre tests
                     except Exception as e:
-                        print(f"❌ Error en test: {e}")
+                        print(f"ERROR: Error en test: {e}")
 
 if __name__ == '__main__':
     import sys

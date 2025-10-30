@@ -1,0 +1,44 @@
+.ds-tooltip-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.ds-tooltip {
+  position: fixed;
+  z-index: 999;
+  background: #1e293b;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.4;
+  max-width: 240px;
+  pointer-events: none;
+  animation: tooltipFadeIn 0.2s ease-out;
+  transform: translateX(-50%);
+}
+
+@keyframes tooltipFadeIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(5px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.ds-tooltip-arrow {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: inherit;
+  transform: rotate(45deg);
+}
+
+.ds-tooltip-top .ds-tooltip-arrow {
+  bottom: -4px;
+  left: 50%;
+  margin-left: -4px;
+}
+
+.ds-tooltip-bottom .ds-tooltip-arrow {
+  top: -4px;
+  left: 50%;
+  margin-left: -4px;
+}

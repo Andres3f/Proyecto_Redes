@@ -1,15 +1,63 @@
 import React, { useState, useRef, useEffect } from 'react'
 import './styles_new.css'
+import './design-system.css'
 import LayerVisualization from './components/LayerVisualization'
+import { ToastProvider, useToast } from './components/Toast'
+import { Tooltip } from './components/Tooltip'
 
-// Icono para el modo oscuro usando un SVG personalizado
-const ModeNightIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+// Iconos SVG modernos
+const MoonIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
   </svg>
 )
 
-export default function App() {
+const SunIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="5"></circle>
+    <line x1="12" y1="1" x2="12" y2="3"></line>
+    <line x1="12" y1="21" x2="12" y2="23"></line>
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+    <line x1="1" y1="12" x2="3" y2="12"></line>
+    <line x1="21" y1="12" x2="23" y2="12"></line>
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+  </svg>
+)
+
+const SendIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="22" y1="2" x2="11" y2="13"></line>
+    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+  </svg>
+)
+
+const ImageIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+    <polyline points="21 15 16 10 5 21"></polyline>
+  </svg>
+)
+
+const UserIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+    <circle cx="12" cy="7" r="4"></circle>
+  </svg>
+)
+
+const LogoutIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+    <polyline points="16 17 21 12 16 7"></polyline>
+    <line x1="21" y1="12" x2="9" y2="12"></line>
+  </svg>
+)
+
+function App() {
+  const toast = useToast();
   // Estados para autenticación y conexión
   const [username, setUsername] = useState('')
   const [connected, setConnected] = useState(false)
@@ -24,7 +72,7 @@ export default function App() {
   const [chatHistory, setChatHistory] = useState({}) // { usuario: [ {from, to, content} ] }
   const [unread, setUnread] = useState({}) // { usuario: cantidad }
   const [users, setUsers] = useState([])
-  const [userIPs, setUserIPs] = useState({})  // Mapeo de usuarios a IPs
+  const [userIPs, setUserIPs] = useState({}) // Mapeo de usuarios a IPs
   const [newMessage, setNewMessage] = useState('')
   const [selectedUser, setSelectedUser] = useState('')
   const messagesEndRef = useRef(null) // Para auto-scroll
@@ -54,6 +102,9 @@ export default function App() {
   // Función para alternar el modo oscuro
   const toggleDarkMode = () => {
     setDarkMode(prev => !prev)
+    if (toast && toast.addToast) {
+      toast.addToast(`Modo ${!darkMode ? 'oscuro' : 'claro'} activado`, 'info')
+    }
   }
 
   // Obtener URL de ngrok al cargar
@@ -76,7 +127,16 @@ export default function App() {
   
   // Conectar WebSocket
   const connectWebSocket = () => {
+    if (!username.trim()) {
+      if (toast && toast.addToast) {
+        toast.addToast('Por favor ingresa un nombre de usuario', 'error')
+      }
+      return
+    }
     if (username.trim()) {
+      if (toast && toast.addToast) {
+        toast.addToast(`Conectando como ${username}...`, 'info')
+      }
       const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
       // Si tenemos URL de ngrok, usarla; si no, usar la URL relativa
       const wsUrl = ngrokUrl 
@@ -88,6 +148,9 @@ export default function App() {
         ws.send(JSON.stringify({ type: 'list' }))
         setConnected(true)
         setSocket(ws)
+        if (toast && toast.addToast) {
+          toast.addToast(`Conectado como ${username}`, 'success')
+        }
       }
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data)
@@ -155,6 +218,9 @@ export default function App() {
       ws.onclose = () => {
         setConnected(false)
         setSocket(null)
+        if (toast && toast.addToast) {
+          toast.addToast('Desconectado del servidor', 'warning')
+        }
       }
       ws.onerror = (error) => {
         console.error('WebSocket error:', error)
@@ -166,6 +232,9 @@ export default function App() {
   const disconnectWebSocket = () => {
     if (socket) {
       socket.close()
+      if (toast && toast.addToast) {
+        toast.addToast('Sesión finalizada', 'info')
+      }
     }
   }
   
@@ -227,6 +296,9 @@ export default function App() {
         }
       })
       setNewMessage('')
+      if (toast && toast.addToast) {
+        toast.addToast('Mensaje enviado', 'success')
+      }
     }
   }
   
@@ -280,8 +352,11 @@ export default function App() {
       })
       const result = await response.json()
       if (result.status === 'sent') {
-        setUploadStatus(`✅ Imagen enviada: ${result.filename}`)
+        setUploadStatus(`Imagen enviada: ${result.filename}`)
         setTransferStats(result.stats)
+        if (toast && toast.addToast) {
+          toast.addToast('Imagen enviada correctamente', 'success')
+        }
         
         // Actualizar simulación con datos reales
         if (result.stats) {
@@ -305,7 +380,7 @@ export default function App() {
         if (socket) {
           // Suponiendo que el backend guarda la imagen en /received/<filename>
           if (!result.filename) {
-            setUploadStatus('❌ Error: No se recibió el nombre seguro del archivo.');
+            setUploadStatus('ERROR: No se recibió el nombre seguro del archivo.');
             setTimeout(() => setUploadStatus(''), 5000);
             return;
           }
@@ -337,12 +412,18 @@ export default function App() {
           setUploadStatus('')
         }, 3000)
       } else {
-        setUploadStatus(`❌ Error: ${result.error || 'No se pudo enviar la imagen.'}`)
+        setUploadStatus(`ERROR: ${result.error || 'No se pudo enviar la imagen.'}`)
         setTimeout(() => setUploadStatus(''), 5000)
+        if (toast && toast.addToast) {
+          toast.addToast(result.error || 'Error al enviar imagen', 'error')
+        }
       }
     } catch (error) {
-      setUploadStatus(`❌ Error: ${error.message}`)
+      setUploadStatus(`ERROR: ${error.message}`)
       setTimeout(() => setUploadStatus(''), 5000)
+      if (toast && toast.addToast) {
+        toast.addToast(`Error: ${error.message}`, 'error')
+      }
       // Terminar simulación en caso de error
       setIsSimulating(false)
     }
@@ -369,14 +450,15 @@ export default function App() {
     <div className="app-container">
       <div className="header">
         <h1>Chat — Proyecto Redes</h1>
-        <button 
-          onClick={toggleDarkMode} 
-          className="theme-toggle"
-          aria-label="Alternar modo oscuro"
-          title={darkMode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
-        >
-          <ModeNightIcon />
-        </button>
+        <Tooltip content={darkMode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}>
+          <button
+            onClick={toggleDarkMode}
+            className="theme-toggle"
+            aria-label="Alternar modo oscuro"
+          >
+            {darkMode ? <SunIcon /> : <MoonIcon />}
+          </button>
+        </Tooltip>
       </div>
       {!connected ? (
         <div style={{ marginBottom: '20px' }}>
@@ -422,7 +504,7 @@ export default function App() {
                 </div>
               ))
             ) : (
-              <div style={{ color: '#aaa', textAlign: 'center', marginTop: '40px' }}>
+              <div className="empty-chat-message">
                 {selectedUser ? 'No hay mensajes con este usuario.' : 'Selecciona un usuario para chatear.'}
               </div>
             )}
@@ -460,7 +542,7 @@ export default function App() {
                 title="Enviar imagen con fragmentación"
                 disabled={!selectedUser || selectedUser === username}
               >
-                📎 Imagen
+                Imagen
               </button>
             </div>
               {/* Explicación de modos de transferencia (ahora abajo) */}
@@ -473,7 +555,7 @@ export default function App() {
             </>
           )}
           {uploadStatus && (
-            <div className={`upload-status ${uploadStatus.includes('❌') ? 'error' : 'success'}`}>
+            <div className={`upload-status ${uploadStatus.includes('ERROR') ? 'error' : 'success'}`}>
               {uploadStatus}
             </div>
           )}
@@ -521,5 +603,14 @@ export default function App() {
         </p>
       )}
     </div>
+  )
+}
+
+// Wrapper con ToastProvider
+export default function AppWithProviders() {
+  return (
+    <ToastProvider>
+      <App />
+    </ToastProvider>
   )
 }

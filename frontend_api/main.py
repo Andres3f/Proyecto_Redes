@@ -124,7 +124,7 @@ async def _handle_upload(file, host, port, mode, loss_rate, chunk_size, enable_c
             safe_name = f"img_{uuid.uuid4().hex}{ext}"
             dest_path = os.path.join(received_dir, safe_name)
             shutil.copy(str(tmp_path), dest_path)
-            print(f"[API] ✅ Imagen guardada localmente: {dest_path}")
+            print(f"[API] Imagen guardada localmente: {dest_path}")
             modo = f'{mode}-IMG-LOCAL'
             
             # Ahora intentar enviar al servidor de transporte (opcional, no bloqueante para el usuario)
@@ -133,21 +133,21 @@ async def _handle_upload(file, host, port, mode, loss_rate, chunk_size, enable_c
                     from src.app.cliente import send_image_fragmented_fiable
                     await send_image_fragmented_fiable(host, port, str(tmp_path), chunk_size=chunk_size, max_retries=5, ack_timeout=0.5)
                     modo = f'{mode}-IMG-FRAGMENTED-ENVIADO'
-                    print(f"[API] ✅ Imagen también enviada al servidor de transporte en {host}:{port}")
+                    print(f"[API] Imagen también enviada al servidor de transporte en {host}:{port}")
                 elif mode == 'SEMI-FIABLE':
                     from src.app.cliente import send_image_fragmented_semi_fiable
                     await send_image_fragmented_semi_fiable(host, port, str(tmp_path), chunk_size=chunk_size, enable_compression=enable_compression)
                     modo = f'{mode}-IMG-FRAGMENTED-ENVIADO'
-                    print(f"[API] ✅ Imagen también enviada al servidor de transporte en {host}:{port}")
+                    print(f"[API] Imagen también enviada al servidor de transporte en {host}:{port}")
             except Exception as e:
                 # Si falla el envío al servidor, la imagen ya está guardada localmente
-                print(f"[API] ⚠️ No se pudo enviar al servidor de transporte: {e} (pero la imagen está disponible localmente)")
+                print(f"[API] ADVERTENCIA: No se pudo enviar al servidor de transporte: {e} (pero la imagen está disponible localmente)")
         else:
             # Archivo normal
             await send_file(host, port, str(tmp_path))
             modo = f'{mode}-NORMAL'
     except Exception as e:
-        print(f"[API] ❌ Error al procesar archivo: {e}")
+        print(f"[API] ERROR: Error al procesar archivo: {e}")
         raise HTTPException(status_code=500, detail=f"Error processing file: {e}")
 
     # Limpiar archivo temporal
