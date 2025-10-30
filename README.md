@@ -185,7 +185,7 @@ Los servicios se pueden configurar a través de variables de entorno en el `dock
 
 Este proyecto implementa un sistema de comunicación basado en el modelo de referencia OSI, enfocado en las capas de transporte, sesión y aplicación para transferencia confiable de archivos y mensajes de control.
 
-## 📁 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 Proyecto_Redes/
@@ -224,7 +224,7 @@ Proyecto_Redes/
 └── README.md                      # Este archivo
 ```
 
-## 🚀 Instalación y Configuración
+## Instalación y Configuración
 
 ### Requisitos Previos
 - Python 3.7 o superior
@@ -244,7 +244,7 @@ pip install -r requirements.txt
 - `pillow`: Para manipulación de imágenes
 - `numpy`: Para operaciones numéricas
 
-## 🏃‍♂️ Comandos para Ejecutar el Proyecto
+## Comandos para Ejecutar el Proyecto
 
 ## Cómo ejecutar (rápido)
 
@@ -275,7 +275,7 @@ npm run dev
 ```
 
 
-### ⭐ MÉTODO RECOMENDADO - Ejecutor Automático
+### MÉTODO RECOMENDADO - Ejecutor Automático
 
 ```bash
 # Demo completo (RECOMENDADO - Soluciona todos los problemas automáticamente)
@@ -291,7 +291,7 @@ python ejecutar_programa.py servidor
 python ejecutar_programa.py cliente
 ```
 
-### 🖥️ Frontend (React) y proxy HTTP
+### Frontend (React) y proxy HTTP
 
 Si quieres usar una interfaz web para enviar archivos, se incluye una app React mínima en `frontend/` y un pequeño proxy HTTP en `frontend_api/` que usa `src.app.cliente.send_file` para enviar archivos al servidor de transporte.
 
@@ -318,14 +318,14 @@ npm run dev
 
 La app sube un archivo y hace POST a `/send`. El proxy guarda temporalmente el archivo y llama a `send_file` para enviarlo al servidor de transporte (puerto 9000 por defecto).
 
-**✅ Ventajas del ejecutor automático:**
+**Ventajas del ejecutor automático:**
 - Configura automáticamente el entorno
 - Soluciona el problema del módulo `src`
 - Manejo robusto de errores
 - Interfaz amigable con mensajes claros
 - Verificación automática de archivos recibidos
 
-### 🔧 Métodos Manuales (Alternativos)
+### Métodos Manuales (Alternativos)
 
 #### 1. Ejecutar el Servidor (Demo MVP)
 ```bash
@@ -374,29 +374,29 @@ python -m pytest tests/
 python -m pytest tests/test_transfer.py -v
 ```
 
-## 📋 Funcionalidades Implementadas
+## Funcionalidades Implementadas
 
 ### Capa de Transporte (Modo Confiable)
-- **Protocolo confiable tipo TCP**: Garantiza entrega ordenada de mensajes
-- **Manejo de conexiones**: Gestión automática de conexiones cliente-servidor
-- **Transferencia de archivos**: Soporte para archivos de hasta varios MB
-- **Mensajes de control**: Sistema de mensajería para coordinación
+- Protocolo confiable tipo TCP: Garantiza entrega ordenada de mensajes
+- Manejo de conexiones: Gestión automática de conexiones cliente-servidor
+- Transferencia de archivos: Soporte para archivos de hasta varios MB
+- Mensajes de control: Sistema de mensajería para coordinación
 
 ### Capa de Sesión
-- **Gestión de sesiones**: Identificación única de sesiones con UUID
-- **Mensajes estructurados**: Formato JSON para comunicación
-- **Control de flujo**: Manejo de diferentes tipos de mensajes
+- Gestión de sesiones: Identificación única de sesiones con UUID
+- Mensajes estructurados: Formato JSON para comunicación
+- Control de flujo: Manejo de diferentes tipos de mensajes
 
 ### Capa de Aplicación
-- **Cliente de transferencia**: Interfaz simple para enviar archivos
-- **Receptor de archivos**: Guardado automático en directorio `received/`
-- **Soporte múltiples formatos**: Texto, imágenes, archivos binarios
+- Cliente de transferencia: Interfaz simple para enviar archivos
+- Receptor de archivos: Guardado automático en directorio `received/`
+- Soporte múltiples formatos: Texto, imágenes, archivos binarios
 
-## 🔧 Configuración del Servidor
+## Configuración del Servidor
 
 ### Puerto por Defecto
-- **Puerto**: 9000
-- **Host**: 0.0.0.0 (acepta conexiones desde cualquier IP)
+- Puerto: 9000
+- Host: 0.0.0.0 (acepta conexiones desde cualquier IP)
 
 ### Cambiar Configuración
 Para cambiar el puerto o host, modifica las líneas correspondientes en los archivos de ejemplo:
@@ -407,15 +407,15 @@ await start_server("0.0.0.0", 9000, on_message)
 # Cambiar 9000 por el puerto deseado
 ```
 
-## 📊 Ejemplo de Uso Completo
+## Ejemplo de Uso Completo
 
-### ⭐ Método Recomendado (Automático)
+### Método Recomendado (Automático)
 ```bash
 # Un solo comando ejecuta todo el demo
 python ejecutar_programa.py
 ```
 
-### 🔧 Método Manual
+### Método Manual
 1. **Iniciar el servidor**:
    ```bash
    # Configurar PYTHONPATH primero
@@ -442,7 +442,7 @@ python ejecutar_programa.py
    - El archivo se guardará en `received/prueba.txt`
    - Se mostrarán mensajes de confirmación en ambas terminales
 
-## 🧪 Pruebas
+## Pruebas
 
 El proyecto incluye pruebas unitarias para verificar la funcionalidad básica:
 
@@ -455,13 +455,13 @@ pip install pytest-cov
 python -m pytest tests/ --cov=src
 ```
 
-## 📚 Documentación Adicional
+## Documentación Adicional
 
 - **Especificaciones técnicas**: Ver `docs/especificaciones.md`
 - **Plan de desarrollo**: Ver `docs/ROADMAP.md`
 - **Documentación detallada**: Ver `docs/README.md`
 
-## 🛠️ Desarrollo
+## Desarrollo
 
 ### Estructura de Mensajes
 Los mensajes siguen un formato JSON estándar:
@@ -481,9 +481,9 @@ Los mensajes siguen un formato JSON estándar:
 3. Agregar pruebas en `tests/`
 4. Actualizar documentación
 
-## 🆘 Solución de Problemas
+## Solución de Problemas
 
-### ❌ Error: "ModuleNotFoundError: No module named 'src'"
+### Error: "ModuleNotFoundError: No module named 'src'"
 
 **Solución rápida:**
 ```bash
@@ -498,7 +498,7 @@ $env:PYTHONPATH = "C:\Users\HP\OneDrive\Escritorio\Proyecto_Redes"
 python examples/pruebademo_mvp.py
 ```
 
-### ❌ Error: "ConnectionRefusedError"
+### Error: "ConnectionRefusedError"
 
 **Causa:** El servidor no está ejecutándose.
 
@@ -507,12 +507,12 @@ python examples/pruebademo_mvp.py
 2. Esperar a que inicie completamente
 3. Luego ejecutar el cliente
 
-### ✅ Verificar que todo funciona
+### Verificar que todo funciona
 
 ```bash
 # Ejecutar demo completo para verificar
 python ejecutar_programa.py
 ```
 
-**🚀 Recomendación**: Usa `python ejecutar_programa.py` para una experiencia sin problemas.
+**Recomendación**: Usa `python ejecutar_programa.py` para una experiencia sin problemas.
 

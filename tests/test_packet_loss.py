@@ -273,7 +273,7 @@ class TestPacketLoss:
             assembled = reassembler.assemble()
             assert assembled == image_data
             
-            print(f"✓ Imagen fragmentada y reensamblada correctamente")
+            print(f"Imagen fragmentada y reensamblada correctamente")
             
         finally:
             os.unlink(tmp_path)
