@@ -66,7 +66,7 @@ docker compose up --build
 http://localhost:5173
 ```
 
-### Ejecucion en Red Local (Multiples Maquinas)
+### Ejecucion en Red (Multiples Maquinas)
 
 1. Acceder a la aplicacion:
 ```
