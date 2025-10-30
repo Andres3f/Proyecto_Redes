@@ -1,6 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react'
 import './styles_new.css'
+import './design-system.css'
 import LayerVisualization from './components/LayerVisualization'
+import { ToastProvider, useToast } from './components/Toast'
+import { Tooltip } from './components/Tooltip'
 
 // Iconos SVG modernos
 const MoonIcon = () => (
@@ -53,7 +56,8 @@ const LogoutIcon = () => (
   </svg>
 )
 
-export default function App() {
+function App() {
+  const toast = useToast();
   // Estados para autenticación y conexión
   const [username, setUsername] = useState('')
   const [connected, setConnected] = useState(false)
@@ -98,6 +102,9 @@ export default function App() {
   // Función para alternar el modo oscuro
   const toggleDarkMode = () => {
     setDarkMode(prev => !prev)
+    if (toast && toast.addToast) {
+      toast.addToast(`Modo ${!darkMode ? 'oscuro' : 'claro'} activado`, 'info')
+    }
   }
 
   // Obtener URL de ngrok al cargar
@@ -120,7 +127,16 @@ export default function App() {
   
   // Conectar WebSocket
   const connectWebSocket = () => {
+    if (!username.trim()) {
+      if (toast && toast.addToast) {
+        toast.addToast('Por favor ingresa un nombre de usuario', 'error')
+      }
+      return
+    }
     if (username.trim()) {
+      if (toast && toast.addToast) {
+        toast.addToast(`Conectando como ${username}...`, 'info')
+      }
       const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
       // Si tenemos URL de ngrok, usarla; si no, usar la URL relativa
       const wsUrl = ngrokUrl 
@@ -132,6 +148,9 @@ export default function App() {
         ws.send(JSON.stringify({ type: 'list' }))
         setConnected(true)
         setSocket(ws)
+        if (toast && toast.addToast) {
+          toast.addToast(`Conectado como ${username}`, 'success')
+        }
       }
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data)
@@ -199,6 +218,9 @@ export default function App() {
       ws.onclose = () => {
         setConnected(false)
         setSocket(null)
+        if (toast && toast.addToast) {
+          toast.addToast('Desconectado del servidor', 'warning')
+        }
       }
       ws.onerror = (error) => {
         console.error('WebSocket error:', error)
@@ -210,6 +232,9 @@ export default function App() {
   const disconnectWebSocket = () => {
     if (socket) {
       socket.close()
+      if (toast && toast.addToast) {
+        toast.addToast('Sesión finalizada', 'info')
+      }
     }
   }
   
@@ -271,6 +296,9 @@ export default function App() {
         }
       })
       setNewMessage('')
+      if (toast && toast.addToast) {
+        toast.addToast('Mensaje enviado', 'success')
+      }
     }
   }
   
@@ -326,6 +354,9 @@ export default function App() {
       if (result.status === 'sent') {
         setUploadStatus(`Imagen enviada: ${result.filename}`)
         setTransferStats(result.stats)
+        if (toast && toast.addToast) {
+          toast.addToast('Imagen enviada correctamente', 'success')
+        }
         
         // Actualizar simulación con datos reales
         if (result.stats) {
@@ -383,10 +414,16 @@ export default function App() {
       } else {
         setUploadStatus(`ERROR: ${result.error || 'No se pudo enviar la imagen.'}`)
         setTimeout(() => setUploadStatus(''), 5000)
+        if (toast && toast.addToast) {
+          toast.addToast(result.error || 'Error al enviar imagen', 'error')
+        }
       }
     } catch (error) {
       setUploadStatus(`ERROR: ${error.message}`)
       setTimeout(() => setUploadStatus(''), 5000)
+      if (toast && toast.addToast) {
+        toast.addToast(`Error: ${error.message}`, 'error')
+      }
       // Terminar simulación en caso de error
       setIsSimulating(false)
     }
@@ -413,14 +450,15 @@ export default function App() {
     <div className="app-container">
       <div className="header">
         <h1>Chat — Proyecto Redes</h1>
-        <button
-          onClick={toggleDarkMode}
-          className="theme-toggle"
-          aria-label="Alternar modo oscuro"
-          title={darkMode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
-        >
-          {darkMode ? <SunIcon /> : <MoonIcon />}
-        </button>
+        <Tooltip content={darkMode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}>
+          <button
+            onClick={toggleDarkMode}
+            className="theme-toggle"
+            aria-label="Alternar modo oscuro"
+          >
+            {darkMode ? <SunIcon /> : <MoonIcon />}
+          </button>
+        </Tooltip>
       </div>
       {!connected ? (
         <div style={{ marginBottom: '20px' }}>
@@ -565,5 +603,14 @@ export default function App() {
         </p>
       )}
     </div>
+  )
+}
+
+// Wrapper con ToastProvider
+export default function AppWithProviders() {
+  return (
+    <ToastProvider>
+      <App />
+    </ToastProvider>
   )
 }

@@ -1,0 +1,64 @@
+:root {
+  --ds-primary: #2563eb;
+  --ds-primary-hover: #1e40af;
+  --ds-success: #10b981;
+  --ds-warning: #f59e0b;
+  --ds-danger: #ef4444;
+  --ds-text-light: #f8fafc;
+  --ds-text-dark: #1e293b;
+}
+
+.ds-btn {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ds-btn-primary {
+  background-color: var(--ds-primary);
+  color: var(--ds-text-light);
+}
+
+.ds-btn-primary:hover {
+  background-color: var(--ds-primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.ds-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.ds-card-elevated {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.ds-card-elevated:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.ds-progress-bar {
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.ds-progress-fill {
+  height: 100%;
+  background: var(--ds-primary);
+  transition: width 0.4s ease;
+}
